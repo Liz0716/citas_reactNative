@@ -1,8 +1,10 @@
-import React from "react";
-import { Pressable, Text, View, StyleSheet } from "react-native";
+import React, {useState} from "react";
+import { Pressable, Text, View, StyleSheet, Modal, FlatList } from "react-native";
 import Formulario from "../components/Formulario";
 import {SafeAreaView} from 'react-native-safe-area-context';
 import { Tpaciente } from "../types/paciente";
+import InformacionPaciente from "../components/informacionPaciente";
+import Paciente from "../components/Paciente";
 
 
 export const Home = () => {
@@ -10,6 +12,8 @@ export const Home = () => {
 
   const [pacientes, setPacientes] = React.useState<Tpaciente[]>([]);
   const [paciente, setPaciente] = React.useState<Tpaciente | null>(null);
+
+  const [modalPaciente, setModalPaciente] = useState(false);
 
 
   const cerrarModal = () => {
@@ -29,7 +33,20 @@ export const Home = () => {
         {pacientes.length === 0 ? (
           <Text>No hay pacientes aún 🥺</Text>
         ): (
-          <Text>Componente pendiente 😔</Text>
+          <FlatList style = {styles.listado}
+          data = {pacientes}
+          keyExtractor={(item)=>item.id}
+          renderItem={({item}) =>{
+            return(
+              <Paciente 
+                item = {item}
+                setModalVisible = {setModalVisible}
+                setPaciente = {setPaciente}
+              ></Paciente>
+            )
+          }}>
+
+          </FlatList>
         )}
 
         <Pressable
@@ -50,6 +67,22 @@ export const Home = () => {
           ></Formulario>
          </SafeAreaView>
         }
+
+        <Modal
+        visible={modalPaciente}
+        animationType="slide"
+        >
+          <InformacionPaciente
+            paciente = {paciente}
+            setPaciente = {setPaciente}
+            setModalPaciente = {setModalPaciente}>
+
+          </InformacionPaciente>
+          
+        </Modal>
+
+
+
     </View>
   );
 };

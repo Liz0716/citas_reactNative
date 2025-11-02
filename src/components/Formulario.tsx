@@ -2,16 +2,7 @@ import React from 'react'
 import { Modal,Pressable,ScrollView, Text, TextInput, View, StyleSheet } from 'react-native'
 import DateTimePicker, { DateType, useDefaultStyles } from 'react-native-ui-datepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Tpaciente } from '../types/paciente';
-
-
-type Props = {
-    cerrarModal: ()=> void
-    pacientes : Tpaciente[]
-    setPacientes : React.Dispatch<React.SetStateAction<Tpaciente[]>>;
-    paciente : Tpaciente | null;
-    setPaciente : React.Dispatch<React.SetStateAction<Tpaciente | null>>;
-}
+import { Tpaciente, Props } from '../types/paciente';
 
 
 export default function Formulario({cerrarModal, pacientes, setPacientes, paciente, setPaciente}: Props) {
@@ -23,18 +14,41 @@ export default function Formulario({cerrarModal, pacientes, setPacientes, pacien
     const defaultStyles = useDefaultStyles();
     let today = new Date();
 
-    const handleCita = () =>{
-        const nuevoPaciente: Tpaciente = {
-            id: Date.now(),
-            nombre: Npaciente.trim(),
-            propietario: propietario.trim(),
-            email: email.trim(),
-            telefono: telefono.trim(),
-            fecha: selected ?? today,
-        };
-        setPacientes([nuevoPaciente, ...pacientes]);
+    React.useEffect(()=>{
+        if(paciente){
+            setNPaciente(paciente.nombre)
+            setPropietario(paciente.propietario)
+            setEmail(paciente.email)
+            setTelefono(paciente.telefono)
+            setSelected(paciente.fecha as Date)
+        }
+    },[paciente])
 
-        console.log("Paciente agregado",nuevoPaciente);
+    const handleCita = () =>{
+        if (paciente){
+            const pacientesActualizados = pacientes.map(p => p.id == paciente.id
+                ? {
+                    ...p,
+                    nombre: Npaciente.trim(),
+                    propietario: propietario.trim(),
+                    email: email.trim(),
+                    telefono: telefono.trim(),
+                    fecha: selected ?? today,
+                } : p
+            );
+            setPacientes(pacientesActualizados)
+        } else{
+            const nuevoPaciente: Tpaciente = {
+                id: Date.now().toString(),
+                nombre: Npaciente.trim(),
+                propietario: propietario.trim(),
+                email: email.trim(),
+                telefono: telefono.trim(),
+                fecha: selected ?? today,
+            };
+
+            setPacientes([nuevoPaciente, ...pacientes]);
+        }
 
         setNPaciente('');
         setPropietario('');
@@ -46,8 +60,6 @@ export default function Formulario({cerrarModal, pacientes, setPacientes, pacien
         cerrarModal();
     }
 
-
-    
 
   return (
     <Modal animationType='slide' visible={true}>
@@ -102,7 +114,13 @@ export default function Formulario({cerrarModal, pacientes, setPacientes, pacien
                         date= {selected}
                         onChange={({date})=>setSelected(date)}
                         minDate={today}
-                        styles={defaultStyles}
+                        styles={
+                            {
+                                today: { borderColor: 'purple', borderWidth: 1 }, 
+                                selected: { backgroundColor: 'purple' }, 
+                                selected_label: { color: 'white' }
+                            }
+                        }
                         locale="es"
                         firstDayOfWeek={1}
                         initialView="day"
@@ -111,7 +129,7 @@ export default function Formulario({cerrarModal, pacientes, setPacientes, pacien
             </View>
 
             <Pressable style = {styles.btnNuevaCita} onPress={()=>handleCita()}>
-                <Text style = {styles.btnNuevaCitaTexto}>Guardar cita</Text>
+                <Text style = {styles.btnNuevaCitaTexto}>{paciente ? 'Editar Paciente' : 'Guardar Cita'}</Text>
             </Pressable>
             
         </ScrollView>
